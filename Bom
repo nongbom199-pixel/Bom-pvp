@@ -1,0 +1,81 @@
+-- [[ BLOCK SPIN SCRIPT - THAI MENU ]] --
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Block Spin | เมนูภาษาไทย",
+   LoadingTitle = "กำลังโหลดสคริปต์...",
+   LoadingSubtitle = "โดย AI Assistant",
+   ConfigurationSaving = {
+      Enabled = false,
+   },
+   KeySystem = false,
+})
+
+local MainTab = Window:CreateTab("ฟังก์ชันหลัก", 4483362458) -- ไอคอนเมนู
+
+-- Variable Setup
+local LocalPlayer = game.Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- 1. ฟังก์ชันมุดดิน (Underground / Noclip Down)
+local NoclipDownEnabled = false
+MainTab:CreateToggle({
+   Name = "1. มุดดิน (Underground)",
+   CurrentValue = false,
+   Flag = "UndergroundFlag",
+   Callback = function(Value)
+      NoclipDownEnabled = Value
+      if NoclipDownEnabled then
+         task.spawn(function()
+            while NoclipDownEnabled do
+               if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                  LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -0.5, 0)
+               end
+               task.wait(0.1)
+            end
+         end)
+      end
+   end,
+})
+
+-- 2. ล็อกหัว + วง FOV (Aimbot Head + FOV Circle)
+local AimbotEnabled = false
+local FOVRadius = 150
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 2
+FOVCircle.Color = Color3.fromRGB(255, 0, 0)
+FOVCircle.Filled = false
+FOVCircle.Visible = false
+
+MainTab:CreateToggle({
+   Name = "2. ล็อกหัว + แสดงวงเอมบ็อท (Aimbot Head)",
+   CurrentValue = false,
+   Flag = "AimbotFlag",
+   Callback = function(Value)
+      AimbotEnabled = Value
+      FOVCircle.Visible = Value
+   end,
+})
+
+-- อัปเดตตำแหน่งวง FOV ตามเมาส์
+RunService.RenderStepped:Connect(function()
+   local MouseLocation = UserInputService:GetMouseLocation()
+   FOVCircle.Position = Vector2.new(MouseLocation.X, MouseLocation.Y)
+   FOVCircle.Radius = FOVRadius
+
+   if AimbotEnabled then
+      local Target = nil
+      local ShortestDistance = FOVRadius
+
+      for _, v in pairs(game.Players:GetPlayers()) do
+         if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Head") and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+            local ScreenPos, OnScreen = Camera:WorldToViewportPoint(v.Character.Head.Position)
+            if OnScreen then
+               local MousePos = UserInputService:GetMouseLocation()
+               local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - MousePos).Magnitude
+               if Distance < ShortestDistance then
+                  ShortestDistance = Distance
+                  Target
